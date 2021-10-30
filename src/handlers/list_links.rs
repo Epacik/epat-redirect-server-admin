@@ -4,8 +4,8 @@ use links::Links;
 use crate::database::links;
 
 #[get("/list_links")]
-async fn list_links() -> impl Responder {
+pub(crate) async fn list_links() -> impl Responder {
     let result : Vec<Links> = crate::database::RB.fetch_list().await.unwrap();
 
-    "Hello ! id:".to_string()
+    serde_json::to_string_pretty(&result).unwrap()
 }

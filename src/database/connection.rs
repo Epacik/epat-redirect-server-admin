@@ -1,6 +1,3 @@
-#[macro_use]
-use crate::macros::attempt;
-
 use std::error::Error;
 use std::fs;
 use rbatis::rbatis::Rbatis;
@@ -17,14 +14,14 @@ fn load_connection_string() -> String {
     match load_config_file() {
         Ok(config) => content = config,
         Err(err) => {
-            let emptyConfig =  Config {
+            let empty_config =  Config {
                 address: "".to_string(),
                 username: "".to_string(),
                 password: "".to_string(),
                 database: "".to_string(),
             };
 
-            match serde_json::to_vec_pretty(&emptyConfig){
+            match serde_json::to_vec_pretty(&empty_config){
                 Ok(value) => {
                     fs::write("./config.json", value);
                     panic!();
