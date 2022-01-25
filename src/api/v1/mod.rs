@@ -1,14 +1,17 @@
-mod definitions;
+mod link;
+mod link_with_opengraph;
+mod opengraph;
 
 use std::str::FromStr;
 use actix_web::{get, put, patch, delete, web,Responder, HttpResponse};
 use rbatis::crud::{CRUD, Skip};
-use crate::api::v1::definitions::LinkWithOpengraph;
+use crate::api::v1::link::Link;
+use crate::api::v1::link_with_opengraph::LinkWithOpengraph;
 use crate::database::{Links, OpenGraph, RB};
 
 //#region link responses
 #[put("/api/v1/add_link")]
-pub(crate) async fn add_link(link_to_add: web::Json<definitions::Link>) -> impl Responder {
+pub(crate) async fn add_link(link_to_add: web::Json<Link>) -> impl Responder {
 
     log::info!("Adding link \n{} -> {}", &link_to_add.path, &link_to_add.target);
     let result = RB.save(&Links {
@@ -138,7 +141,7 @@ pub(crate) async fn remove_link(web::Path(path): web::Path<String>) ->  impl Res
 //#region opengraph
 
 #[put("/api/v1/add_opengraph_tag")]
-pub(crate) async fn add_opengraph_tag(og_tag: web::Json<definitions::OpenGraph>) -> impl Responder {
+pub(crate) async fn add_opengraph_tag(og_tag: web::Json<opengraph::OpenGraph>) -> impl Responder {
 
     log::info!("Adding opengraph tag \nlink id: {}\ntag: {}\ncontent: {}", &og_tag.id, &og_tag.tag, &og_tag.content);
     let result = RB.save(&OpenGraph {
@@ -214,9 +217,21 @@ pub(crate) async fn remove_opengraph_tag(web::Path(id): web::Path<u32>) ->  impl
 
 #[get("/api/v1/list_links")]
 pub(crate) async fn list_links() -> impl Responder {
-    let result : Vec<Links> = RB.fetch_list().await.unwrap();
+    let links_wrapper = RB.new_wrapper()
+        .order_by(true, &["lnk_path"]);
+    let links_result : Result<Vec<Links>, _> = RB.fetch_list_by_wrapper(links_wrapper).await;
 
-    serde_json::to_string_pretty(&result).unwrap()
+    if links_result.is_err(){
+        return HttpResponse::BadRequest().body(links_result.unwrap_err().to_string());
+    }
+
+    let json_result = serde_json::to_string_pretty(&links_result.unwrap());
+
+    if json_result.is_err(){
+        return HttpResponse::BadRequest().body(json_result.unwrap_err().to_string());
+    }
+
+    HttpResponse::Ok().body(json_result.unwrap())
 }
 
 #[get("/api/v1/list_links/{query:.*}")]
@@ -225,7 +240,8 @@ pub(crate) async fn list_links_where(web::Path(query): web::Path<String>) -> imp
     let links_wrapper = RB.new_wrapper()
         .like("lnk_target", &*query)
         .or()
-        .like("lnk_path", &*query);
+        .like("lnk_path", &*query)
+        .order_by(true, &["lnk_path"]);
 
     let links_result: Result<Vec<Links>, _> = RB.fetch_list_by_wrapper(links_wrapper).await;
 
