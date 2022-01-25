@@ -1,1 +1,7 @@
 /target
+/.idea
+cert.pem
+
+key.pem
+
+logs/
