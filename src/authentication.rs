@@ -43,7 +43,7 @@ pub async fn validate_authorization(request: ServiceRequest, credentials: Bearer
     let blocked_wrapper = RB.new_wrapper()
         .eq("akb_key_id", key.aak_id)
         .and()
-        .like("akb_ip", ip);
+        .eq("akb_ip", ip);
 
     let blocked: Result<Option<ApiKeysBlocked>, _> = RB.fetch_by_wrapper(blocked_wrapper).await;
 
