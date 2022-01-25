@@ -45,7 +45,7 @@ pub async fn validate_authorization(request: ServiceRequest, credentials: Bearer
         .and()
         .eq("akb_ip", ip);
 
-    let blocked: Result<Option<ApiKeysBlocked>, _> = RB.fetch_by_wrapper(blocked_wrapper).await;
+    let blocked: Result<ApiKeysBlocked, _> = RB.fetch_by_wrapper(blocked_wrapper).await;
 
     if blocked.is_ok() {
         log::info!("IP blocked for this token!");
