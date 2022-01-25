@@ -60,9 +60,6 @@ pub struct Config {
     pub database: String,
 }
 
-
-
-
 #[crud_table(table_name:"ewd.lnk_links" | table_columns:"lnk_id,lnk_path,lnk_target,lnk_hide_target")]
 #[derive(Clone, Debug)]
 pub struct Links {
@@ -87,4 +84,12 @@ pub struct ApiKeys {
     pub aak_id: i32,
     pub aak_key: String,
     pub aak_enabled: bool,
+}
+
+#[crud_table(table_name:"ewd.adm_api_keys_blocked_list" | table_columns:"akb_id, akb_key_id, akb_ip")]
+#[derive(Clone, Debug)]
+pub struct ApiKeysBlocked {
+    pub akb_id: i32,
+    pub akb_key_id: i32,
+    pub akb_ip: String,
 }
